@@ -1,0 +1,7 @@
+arize-phoenix
+arize-phoenix-otel
+openinference-instrumentation-langchain
+langgraph
+langchain-groq
+httpx
+python-dotenv

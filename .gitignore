@@ -1,0 +1,24 @@
+# Secrets
+.env
+
+# Virtual environments
+.venv/
+.travel-agent/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Phoenix local data
+.phoenix/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
