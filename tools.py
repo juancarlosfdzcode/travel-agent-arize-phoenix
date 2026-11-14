@@ -1,32 +1,36 @@
+
+"""Travel tools exposed to the agent: weather, currency conversion and distance."""
+
 import math
 
 import httpx
 from langchain_core.tools import tool
 
-TIMEOUT = 10
+REQUEST_TIMEOUT_SECONDS = 10
+EARTH_RADIUS_KM = 6371
 
 WEATHER_CODES = {
-    0: "despejado", 1: "mayormente despejado", 2: "parcialmente nublado",
-    3: "nublado", 45: "niebla", 48: "niebla con escarcha",
-    51: "llovizna ligera", 53: "llovizna", 55: "llovizna intensa",
-    61: "lluvia ligera", 63: "lluvia", 65: "lluvia intensa",
-    71: "nieve ligera", 73: "nieve", 75: "nieve intensa",
-    80: "chubascos ligeros", 81: "chubascos", 82: "chubascos fuertes",
-    95: "tormenta", 96: "tormenta con granizo", 99: "tormenta fuerte con granizo",
+    0: "clear sky", 1: "mainly clear", 2: "partly cloudy",
+    3: "overcast", 45: "fog", 48: "depositing rime fog",
+    51: "light drizzle", 53: "drizzle", 55: "dense drizzle",
+    61: "light rain", 63: "rain", 65: "heavy rain",
+    71: "light snow", 73: "snow", 75: "heavy snow",
+    80: "light showers", 81: "showers", 82: "violent showers",
+    95: "thunderstorm", 96: "thunderstorm with hail", 99: "severe thunderstorm with hail",
 }
 
 
 def geocode(city: str) -> dict:
-    """Convierte un nombre de ciudad en coordenadas (helper interno, no es tool)."""
-    r = httpx.get(
+    """Resolve a city name to coordinates (internal helper, not exposed as a tool)."""
+    response = httpx.get(
         "https://geocoding-api.open-meteo.com/v1/search",
-        params={"name": city, "count": 1, "language": "es", "format": "json"},
-        timeout=TIMEOUT,
+        params={"name": city, "count": 1, "language": "en", "format": "json"},
+        timeout=REQUEST_TIMEOUT_SECONDS,
     )
-    r.raise_for_status()
-    results = r.json().get("results")
+    response.raise_for_status()
+    results = response.json().get("results")
     if not results:
-        raise ValueError(f"No encuentro la ciudad '{city}'")
+        raise ValueError(f"City not found: '{city}'")
     place = results[0]
     return {
         "name": place["name"],
@@ -38,9 +42,9 @@ def geocode(city: str) -> dict:
 
 @tool
 def get_weather(city: str) -> dict:
-    """Devuelve el tiempo actual en una ciudad: temperatura (°C), estado del cielo y viento (km/h)."""
+    """Get the current weather in a city: temperature (°C), sky condition and wind speed (km/h)."""
     place = geocode(city)
-    r = httpx.get(
+    response = httpx.get(
         "https://api.open-meteo.com/v1/forecast",
         params={
             "latitude": place["lat"],
@@ -48,34 +52,35 @@ def get_weather(city: str) -> dict:
             "current": "temperature_2m,weather_code,wind_speed_10m",
             "timezone": "auto",
         },
-        timeout=TIMEOUT,
+        timeout=REQUEST_TIMEOUT_SECONDS,
     )
-    r.raise_for_status()
-    current = r.json()["current"]
+    response.raise_for_status()
+    current = response.json()["current"]
     return {
         "city": f"{place['name']}, {place['country']}",
         "temperature_c": current["temperature_2m"],
-        "condition": WEATHER_CODES.get(current["weather_code"], "desconocido"),
+        "condition": WEATHER_CODES.get(current["weather_code"], "unknown"),
         "wind_kmh": current["wind_speed_10m"],
     }
 
 
 @tool
 def convert_currency(amount: float, from_currency: str, to_currency: str) -> dict:
-    """Convierte una cantidad entre dos divisas usando códigos ISO de 3 letras (EUR, USD, JPY...)."""
-    src, dst = from_currency.upper(), to_currency.upper()
-    r = httpx.get(
+    """Convert an amount between two currencies using 3-letter ISO codes (EUR, USD, JPY...)."""
+    source_currency = from_currency.upper()
+    target_currency = to_currency.upper()
+    response = httpx.get(
         "https://api.frankfurter.dev/v1/latest",
-        params={"base": src, "symbols": dst},
-        timeout=TIMEOUT,
+        params={"base": source_currency, "symbols": target_currency},
+        timeout=REQUEST_TIMEOUT_SECONDS,
     )
-    r.raise_for_status()
-    data = r.json()
-    rate = data["rates"][dst]
+    response.raise_for_status()
+    data = response.json()
+    rate = data["rates"][target_currency]
     return {
         "amount": amount,
-        "from": src,
-        "to": dst,
+        "from": source_currency,
+        "to": target_currency,
         "rate": rate,
         "result": round(amount * rate, 2),
         "date": data["date"],
@@ -84,18 +89,25 @@ def convert_currency(amount: float, from_currency: str, to_currency: str) -> dic
 
 @tool
 def get_distance(city_a: str, city_b: str) -> dict:
-    """Calcula la distancia en línea recta (km) entre dos ciudades."""
-    a, b = geocode(city_a), geocode(city_b)
-    R = 6371  # radio de la Tierra en km
-    lat1, lat2 = math.radians(a["lat"]), math.radians(b["lat"])
-    dlat = lat2 - lat1
-    dlon = math.radians(b["lon"] - a["lon"])
-    h = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
-    km = 2 * R * math.asin(math.sqrt(h))
+    """Compute the straight-line (great-circle) distance in km between two cities."""
+    origin = geocode(city_a)
+    destination = geocode(city_b)
+
+    # Haversine formula
+    lat_origin = math.radians(origin["lat"])
+    lat_destination = math.radians(destination["lat"])
+    delta_lat = lat_destination - lat_origin
+    delta_lon = math.radians(destination["lon"] - origin["lon"])
+    haversine = (
+        math.sin(delta_lat / 2) ** 2
+        + math.cos(lat_origin) * math.cos(lat_destination) * math.sin(delta_lon / 2) ** 2
+    )
+    distance_km = 2 * EARTH_RADIUS_KM * math.asin(math.sqrt(haversine))
+
     return {
-        "from": f"{a['name']}, {a['country']}",
-        "to": f"{b['name']}, {b['country']}",
-        "distance_km": round(km),
+        "from": f"{origin['name']}, {origin['country']}",
+        "to": f"{destination['name']}, {destination['country']}",
+        "distance_km": round(distance_km),
     }
 
 

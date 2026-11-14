@@ -1,0 +1,18 @@
+
+[
+  {"id": "q01", "category": "single_tool", "question": "What's the weather like in Lisbon right now?", "expected_tools": ["get_weather"]},
+  {"id": "q02", "category": "single_tool", "question": "How much is 250 US dollars in euros?", "expected_tools": ["convert_currency"]},
+  {"id": "q03", "category": "single_tool", "question": "How far is Barcelona from Paris?", "expected_tools": ["get_distance"]},
+  {"id": "q04", "category": "multi_tool", "question": "I'm travelling from Madrid to Tokyo with 500 euros. How far is it, how many yen is that, and what's the weather there right now?", "expected_tools": ["convert_currency", "get_distance", "get_weather"]},
+  {"id": "q05", "category": "multi_tool", "question": "Is it warmer in Rome or in Berlin right now?", "expected_tools": ["get_weather", "get_weather"]},
+  {"id": "q06", "category": "multi_tool", "question": "I have 1000 euros. How much is that in British pounds and in Swiss francs?", "expected_tools": ["convert_currency", "convert_currency"]},
+  {"id": "q07", "category": "implicit_args", "question": "How many Japanese yen do I get for 300 Mexican pesos?", "expected_tools": ["convert_currency"]},
+  {"id": "q08", "category": "tool_limits", "question": "Should I pack an umbrella for my trip to London tomorrow?", "expected_tools": ["get_weather"]},
+  {"id": "q09", "category": "no_tool", "question": "What's the capital of Australia?", "expected_tools": []},
+  {"id": "q10", "category": "out_of_scope", "question": "Can you book me a flight from Madrid to New York for next Friday?", "expected_tools": []},
+  {"id": "q11", "category": "error_handling", "question": "What's the weather in Atlantis?", "expected_tools": ["get_weather"]},
+  {"id": "q12", "category": "ambiguity", "question": "What's the weather in Valencia?", "expected_tools": ["get_weather"]},
+  {"id": "q13", "category": "error_handling", "question": "Convert 100 euros to Bitcoin.", "expected_tools": ["convert_currency"]},
+  {"id": "q14", "category": "reasoning", "question": "I'm driving from Madrid to Lisbon at an average of 100 km/h. Roughly how long will it take, and what's the weather like when I get there?", "expected_tools": ["get_distance", "get_weather"]},
+  {"id": "q15", "category": "language", "question": "¿Qué tiempo hace en Sevilla y cuántos dólares son 50 euros?", "expected_tools": ["convert_currency", "get_weather"]}
+]
