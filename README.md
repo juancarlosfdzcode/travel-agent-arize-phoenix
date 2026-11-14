@@ -157,10 +157,10 @@ Every run is tagged in Phoenix with its category (`tag.tags`), question id (`met
 - **Tool spans** – the arguments the model chose and what each tool returned.
 - **Latency** – how long each step takes. For example, whether the model calls independent tools one at a time (several LLM round trips) or in parallel.
 
-## Troubleshooting
+## 👤 Author
 
-- **`model_not_found` from Groq** – Groq retires models regularly. Pick a current model with tool-use support from the [Groq models page](https://console.groq.com/docs/models) (see also [deprecations](https://console.groq.com/docs/deprecations)) and update `GROQ_MODEL` in `.env`.
-- **No traces in Phoenix** – make sure `phoenix serve` is running, `PHOENIX_COLLECTOR_ENDPOINT` points to it, and `register()` is called *before* importing `agent`.
-- **`City not found`** – the geocoder could not resolve the city name; try the English name or add the country (e.g. `"Valencia, Spain"`).
+* GitHub: https://github.com/juancarlosfdzcode
+* LinkedIn: https://www.linkedin.com/in/juan-carlos-fdz/
+* Medium: https://medium.com/@juancarlosfdzgarcode
 
 
