@@ -1,5 +1,11 @@
 # Travel Agent · Arize Phoenix
 
+[![python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Agent-green)](https://github.com/langchain-ai/langgraph)
+[![Groq](https://img.shields.io/badge/Groq-gpt--oss--120b-orange)](https://console.groq.com/)
+[![Arize Phoenix](https://img.shields.io/badge/Arize%20Phoenix-Observability-purple)](https://github.com/Arize-ai/phoenix)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Tracing-lightgrey)](https://opentelemetry.io/)
+
 A LangGraph travel assistant powered by Groq that checks the weather, converts currencies and calculates distances between cities — fully traced with [Arize Phoenix](https://github.com/Arize-ai/phoenix).
 
 The goal of this project is to be a small, readable playground for **LLM agent observability**: every reasoning step, tool call, token count and latency is visible in Phoenix, so you can see exactly what the agent did and where it went wrong.
@@ -157,13 +163,4 @@ Every run is tagged in Phoenix with its category (`tag.tags`), question id (`met
 - **No traces in Phoenix** – make sure `phoenix serve` is running, `PHOENIX_COLLECTOR_ENDPOINT` points to it, and `register()` is called *before* importing `agent`.
 - **`City not found`** – the geocoder could not resolve the city name; try the English name or add the country (e.g. `"Valencia, Spain"`).
 
-## Roadmap
 
-- [x] Build a dataset of travel questions and check tool selection
-- [ ] Ask the agent to call independent tools in parallel and compare runs in Phoenix
-- [ ] Inject failures on purpose (flaky tool, ambiguous docstrings) and debug them in Phoenix
-- [ ] Turn the dataset into a Phoenix dataset and compare system prompts and models with experiments
-
-## Tech stack
-
-[LangGraph](https://github.com/langchain-ai/langgraph) · [LangChain Groq](https://python.langchain.com/docs/integrations/chat/groq/) · [Arize Phoenix](https://github.com/Arize-ai/phoenix) · [OpenInference](https://github.com/Arize-ai/openinference) · [OpenTelemetry](https://opentelemetry.io/) · [httpx](https://www.python-httpx.org/)
